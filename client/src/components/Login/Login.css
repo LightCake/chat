@@ -1,0 +1,38 @@
+.login {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+}
+
+.login_left {
+  background-image: url(../../assets/blue_mountains.jpg);
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.login_left_title {
+  color: white;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.5rem 0.8rem;
+}
+
+.login_right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.login_title {
+  font-size: 2rem;
+  color: var(--metallic_seaweed);
+  margin-bottom: 3rem;
+}
+
+.login_form > div {
+  margin-bottom: 1rem;
+}

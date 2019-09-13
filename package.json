@@ -6,9 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "server": "nodemon server.js",
-    "frontend-install": "npm install --prefix frontend",
-    "frontend": "npm start --prefix frontend",
-    "dev": "concurrently \"npm run server\" \"npm run frontend\""
+    "client-install": "npm install --prefix client",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "keywords": [
     "chat"

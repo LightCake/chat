@@ -1,0 +1,32 @@
+.register {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+}
+
+.register_left {
+  grid-column: 1/2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.register_title {
+  font-size: 2rem;
+  color: var(--metallic_seaweed);
+  margin-bottom: 3rem;
+}
+
+.register_right {
+  grid-column: 2/3;
+  background-image: url(../../assets/mirrored.jpg);
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.register_form > div {
+  margin-bottom: 1rem;
+}
