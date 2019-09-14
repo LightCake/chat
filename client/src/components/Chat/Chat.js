@@ -16,8 +16,21 @@ const Chat = props => {
   } = props;
 
   const [message, setMessage] = useState("");
+
   // Returned object will persist for the full lifetime of the component.
   const ws = useRef(null);
+
+  // References the div at the end of the message history
+  const messagesEndRef = useRef(null);
+
+  // Scroll to the div at the bottom of the message history
+  const scrollToBottom = () => {
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Trigger the 'scrollToBottom' function, whenever the 'messages' prop changes
+  useEffect(scrollToBottom, [messages]);
+
   // Equivalent to ComponentDidMount lifecycle method
   useEffect(() => {
     const [_, token] = localStorage.getItem("jwtToken").split(" ");
@@ -83,6 +96,7 @@ const Chat = props => {
             date={message.created}
           />
         ))}
+        <div ref={messagesEndRef} />
       </div>
       <div className="chat_input_container">
         <form onSubmit={handleSubmit} className="chat_form">
