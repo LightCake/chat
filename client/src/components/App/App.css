@@ -31,4 +31,6 @@ body {
 
 .app > :nth-child(2) {
   flex: 1;
+  /* Prevent from growing bigger than the flexbox container */
+  min-height: 0;
 }

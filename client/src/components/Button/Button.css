@@ -1,9 +1,8 @@
 .button {
   font-size: 1.5rem;
   padding: 0.5rem 0.8rem;
-  border: none;
+  border: 1px solid white;
   color: white;
-  border-radius: 0.2rem;
   background: var(--metallic_seaweed);
   cursor: pointer;
 }

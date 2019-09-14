@@ -44,17 +44,39 @@ db.query("SELECT * FROM rooms", (err, res) => {
 });
 
 wss.on("connection", (ws, req) => {
-  rooms["Lobby"].push({ ws, user: { id: req.jwt.id, name: req.jwt.name } });
-  console.log(rooms);
+  // Join the lobby on connection
+  rooms["Lobby"].push({ ws, user: req.jwt.name });
+
+  db.query(
+    "SELECT m.id, r.name as room, u.name as user, m.text, m.created FROM messages m  LEFT OUTER JOIN rooms r ON (m.room_id = r.id) LEFT OUTER JOIN users u ON (u.id = m.user_id) WHERE r.name = $1 ORDER BY m.created ASC",
+    ["Lobby"],
+    (err, res) => {
+      if (err) throw err;
+
+      if (res) {
+        const data = {
+          type: "receive-messages",
+          messages: res.rows
+        };
+        ws.send(JSON.stringify(data));
+      }
+    }
+  );
+
+  // rooms["Lobby"].forEach(client => client.ws.send("hello"));
+  // Send list of rooms, when client connected to websocket
   const data = {
-    type: "receive_rooms",
+    type: "receive-rooms",
     rooms: db_rooms
   };
   ws.send(JSON.stringify(data));
+
   ws.on("message", message => {
     const data = JSON.parse(message);
-
     switch (data.type) {
+      case "join-room":
+        rooms[data.room.name].push({ ws, user: data.user.name });
+        break;
       case "send-message":
         db.query(
           "INSERT INTO messages (user_id, room_id, text) VALUES ($1, $2, $3) RETURNING *",
@@ -63,11 +85,19 @@ wss.on("connection", (ws, req) => {
             if (err) throw err;
 
             if (res) {
-              console.log(res.rows[0]);
-              rooms[data.room.name];
+              const temp = {
+                type: "receive-message",
+                message: { ...res.rows[0], user: data.user.name }
+              };
+              rooms[data.room.name].forEach(client =>
+                client.ws.send(JSON.stringify(temp))
+              );
             }
           }
         );
+        break;
+      case "leave-room":
+        console.log("Leave room: ", data);
     }
   });
 });

@@ -7,7 +7,7 @@ import Button from "../Button/Button";
 import "./NavBar.css";
 
 const NavBar = props => {
-  const { isAuthenticated } = props;
+  const { isAuthenticated, room } = props;
   // Render different elements based on the authentication status
   const getLinks = () => {
     return isAuthenticated ? (
@@ -24,7 +24,7 @@ const NavBar = props => {
       <Link to="/" className="navbar_logo_link">
         <img src={Logo} alt="logo" className="navbar_logo" />
       </Link>
-      <div className="navbar_room">Room: Lobby</div>
+      <div className="navbar_room">Room: {room.name}</div>
       <div className="navbar_group group_1">{getLinks()}</div>
     </div>
   );
