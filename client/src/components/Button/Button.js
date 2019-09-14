@@ -3,8 +3,12 @@ import PropTypes from "prop-types";
 import "./Button.css";
 
 const Button = props => {
-  const { label } = props;
-  return <button className="button">{label}</button>;
+  const { label, type } = props;
+  return (
+    <button className="button" type={type}>
+      {label}
+    </button>
+  );
 };
 
 Button.propTypes = {};
