@@ -11,6 +11,8 @@ const Chat = props => {
     receiveMessage,
     receiveMessages,
     receiveUsers,
+    updateUsers,
+    receiveUser,
     room,
     session,
     messages,
@@ -67,6 +69,13 @@ const Chat = props => {
           break;
         case "receive-users":
           receiveUsers(data.users);
+          break;
+        case "update-users":
+          updateUsers(data.room);
+          break;
+        case "receive-user":
+          receiveUser(data.user);
+          break;
       }
     };
 

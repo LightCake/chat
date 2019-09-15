@@ -92,6 +92,34 @@ wss.on("connection", (ws, req) => {
             users: rooms[data.room.name]
           })
         );
+        // Send the updated number of users in the room to all clients
+        Object.values(rooms).forEach(arr => {
+          arr.forEach(client =>
+            client.ws.send(
+              JSON.stringify({
+                type: "update-users",
+                room: {
+                  name: data.room.name,
+                  users: rooms[data.room.name].length
+                }
+              })
+            )
+          );
+        });
+        // Send the user object to all clients in the room
+        rooms[data.room.name].forEach(client => {
+          if (client.user !== req.jwt.name) {
+            client.ws.send(
+              JSON.stringify({
+                type: "receive-user",
+                user: {
+                  ws,
+                  user: req.jwt.name
+                }
+              })
+            );
+          }
+        });
         break;
       case "send-message":
         db.query(
@@ -117,6 +145,22 @@ wss.on("connection", (ws, req) => {
         rooms[data.room.name] = rooms[data.room.name].filter(
           client => client.user !== data.user.name
         );
+        // Send the updated number of users in the room to all clients
+        Object.values(rooms).forEach(arr => {
+          arr.forEach(client =>
+            client.ws.send(
+              JSON.stringify({
+                type: "update-users",
+                room: {
+                  name: data.room.name,
+                  users: rooms[data.room.name].length
+                }
+              })
+            )
+          );
+        });
+        // TODO: Remove the user from the redux state of all clients in the room
+        break;
     }
   });
 });
