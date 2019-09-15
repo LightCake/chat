@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import Button from "../Button/Button";
 import "./Chat.css";
-import { receiveMessages } from "../../actions/message";
 import ChatMessage from "../ChatMessage/ChatMessage";
+import ChatRoom from "../ChatRoom/ChatRoom";
 
 const Chat = props => {
   const {
@@ -15,33 +15,40 @@ const Chat = props => {
     messages
   } = props;
 
+  // Local state contains the message to send
   const [message, setMessage] = useState("");
 
-  // Returned object will persist for the full lifetime of the component.
+  // References the WebSocket object
   const ws = useRef(null);
 
   // References the div at the end of the message history
   const messagesEndRef = useRef(null);
 
-  // Scroll to the div at the bottom of the message history
+  // Scrolls to the div residint at the bottom of the message history
   const scrollToBottom = () => {
     messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Trigger the 'scrollToBottom' function, whenever the 'messages' prop changes
+  // Triggers the 'scrollToBottom' function, whenever the 'messages' prop changes
   useEffect(scrollToBottom, [messages]);
 
-  // Equivalent to ComponentDidMount lifecycle method
+  // Triggers every time when the component did mount
   useEffect(() => {
+    // Retrieve the JSON webtoken from the local storage
     const [_, token] = localStorage.getItem("jwtToken").split(" ");
+    // Create the uniform ressource identifier with the token inside the query
     const URI = encodeURI(`ws://localhost:5000/?token=${token}`);
+    // Create a WebSocket object and establish a connection to the server
     ws.current = new WebSocket(URI);
 
+    // WebSocket listens on the message event
     ws.current.onmessage = message => {
+      // Converts the string to a javascript object
       const data = JSON.parse(message.data);
+      // Evaluates which message type we received
       switch (data.type) {
         case "receive-rooms":
-          receiveRooms(message.rooms);
+          receiveRooms(data.rooms);
           break;
         case "receive-message":
           receiveMessage(data.message);
@@ -51,42 +58,58 @@ const Chat = props => {
           break;
       }
     };
-    console.log("Component Did Mount");
+
+    // Executes all code inside this function before the page refreshes
+    window.onbeforeunload = () => {
+      // When the page refreshes, we want to leave the current room
+      const data = {
+        type: "leave-room",
+        room: room.current,
+        user
+      };
+      ws.current.send(JSON.stringify(data));
+    };
+
     // Equivalent to ComponentWillUnmount lifecycle method
-    // return () => {
-    //   console.log("Leaving");
-    //   const data = {
-    //     action: "leave-room",
-    //     room: room.current,
-    //     user
-    //   };
-    //   ws.send(JSON.stringify(data));
-    // };
+    return () => {
+      // Leave the current room, when the component will unmount
+      const data = {
+        type: "leave-room",
+        room: room.current,
+        user
+      };
+      ws.current.send(JSON.stringify(data));
+    };
   }, []);
 
+  // Update the local message state, whenever input value changes
   const update = event => {
     setMessage(event.target.value);
   };
 
+  // Run the code inside this function, whenever we submit the form
   const handleSubmit = event => {
+    // Prevent the form to send an actual post request
     event.preventDefault();
+    // Send the message through the websocket connection to the server
     const data = { type: "send-message", message, room: room.current, user };
     ws.current.send(JSON.stringify(data));
+    // Clear the input after message was send
     setMessage("");
-  };
-
-  const joinRoom = () => {
-    const temp = {
-      type: "join-room",
-      room: { name: "Info" },
-      user: { name: "maria" }
-    };
-    ws.current.send(JSON.stringify(temp));
   };
 
   return (
     <div className="chat">
-      <div className="chat_rooms">Chat Rooms</div>
+      <div className="chat_rooms">
+        <div className="chat_rooms_headers">
+          <div>Name</div>
+          <div>Users</div>
+        </div>
+        {room.all.map(room => (
+          <ChatRoom name={room.name} users={room.users} />
+        ))}
+      </div>
+
       <div className="chat_history">
         {messages.map(message => (
           <ChatMessage
@@ -98,6 +121,7 @@ const Chat = props => {
         ))}
         <div ref={messagesEndRef} />
       </div>
+
       <div className="chat_input_container">
         <form onSubmit={handleSubmit} className="chat_form">
           <input
@@ -109,8 +133,9 @@ const Chat = props => {
           <Button type="submit" label="Send" />
         </form>
       </div>
+
       <div className="chat_users">
-        <button onClick={joinRoom}>Join</button>
+        <div>Chat Room</div>
       </div>
     </div>
   );

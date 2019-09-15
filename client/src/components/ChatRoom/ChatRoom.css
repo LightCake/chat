@@ -1,0 +1,9 @@
+.chat_room {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  cursor: pointer;
+}
+
+.chat_room_users {
+  justify-self: end;
+}

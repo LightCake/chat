@@ -5,4 +5,5 @@
   padding: 0.5rem 0.8rem;
   border: 1px solid white;
   background: var(--caribbean_green);
+  outline: none;
 }

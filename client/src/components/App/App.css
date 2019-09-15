@@ -10,12 +10,14 @@ html {
 body {
   margin: 0;
   font-family: "Roboto", sans-serif;
+  color: var(--black);
 }
 
 :root {
   /* Color Palette */
   --sea_blue: #05668d;
   --metallic_seaweed: #028090;
+  --seaweed_blue: #01899b;
   --persian_green: #00a896;
   --caribbean_green: #02c39a;
   --pale_spring_bud: #f0f3bd;

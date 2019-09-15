@@ -65,9 +65,13 @@ wss.on("connection", (ws, req) => {
 
   // rooms["Lobby"].forEach(client => client.ws.send("hello"));
   // Send list of rooms, when client connected to websocket
+  const tent = db_rooms.map(room => {
+    room.users = rooms[room.name].length;
+    return room;
+  });
   const data = {
     type: "receive-rooms",
-    rooms: db_rooms
+    rooms: tent
   };
   ws.send(JSON.stringify(data));
 
@@ -75,7 +79,7 @@ wss.on("connection", (ws, req) => {
     const data = JSON.parse(message);
     switch (data.type) {
       case "join-room":
-        rooms[data.room.name].push({ ws, user: data.user.name });
+        [room.name].length[data.room.name].push({ ws, user: data.user.name });
         break;
       case "send-message":
         db.query(
@@ -97,7 +101,10 @@ wss.on("connection", (ws, req) => {
         );
         break;
       case "leave-room":
-        console.log("Leave room: ", data);
+        // When leaving the room, remove the user from the clients array of the room
+        rooms[data.room.name] = rooms[data.room.name].filter(
+          client => client.user !== data.user.name
+        );
     }
   });
 });
