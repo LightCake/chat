@@ -23,7 +23,7 @@ require("./config/passport")(passport);
 const wss = new WebSocket.Server({
   server,
   verifyClient: (info, done) => {
-    let query = url.parse(info.req.url, true).query;
+    const { query } = url.parse(info.req.url, true);
     jwt.verify(query.token, keys.secretOrKey, (err, decoded) => {
       if (err) return done(false, 403, "Not valid token");
       info.req.jwt = decoded;
@@ -44,42 +44,54 @@ db.query("SELECT * FROM rooms", (err, res) => {
 });
 
 wss.on("connection", (ws, req) => {
-  // Join the lobby on connection
-  rooms["Lobby"].push({ ws, user: req.jwt.name });
-
-  db.query(
-    "SELECT m.id, r.name as room, u.name as user, m.text, m.created FROM messages m  LEFT OUTER JOIN rooms r ON (m.room_id = r.id) LEFT OUTER JOIN users u ON (u.id = m.user_id) WHERE r.name = $1 ORDER BY m.created ASC",
-    ["Lobby"],
-    (err, res) => {
-      if (err) throw err;
-
-      if (res) {
-        const data = {
-          type: "receive-messages",
-          messages: res.rows
-        };
-        ws.send(JSON.stringify(data));
-      }
-    }
-  );
-
   // rooms["Lobby"].forEach(client => client.ws.send("hello"));
   // Send list of rooms, when client connected to websocket
   const tent = db_rooms.map(room => {
     room.users = rooms[room.name].length;
     return room;
   });
-  const data = {
-    type: "receive-rooms",
-    rooms: tent
-  };
-  ws.send(JSON.stringify(data));
+  ws.send(
+    JSON.stringify({
+      type: "receive-rooms",
+      rooms: tent
+    })
+  );
 
   ws.on("message", message => {
     const data = JSON.parse(message);
+
     switch (data.type) {
       case "join-room":
-        [room.name].length[data.room.name].push({ ws, user: data.user.name });
+        // Insert the user in the clients array of the room
+        rooms[data.room.name] = rooms[data.room.name].concat({
+          ws,
+          user: req.jwt.name
+        });
+        // Get all messages of the room from the database
+        db.query(
+          "SELECT m.id, r.name as room, u.name as user, m.text, m.created FROM messages m  LEFT OUTER JOIN rooms r ON (m.room_id = r.id) LEFT OUTER JOIN users u ON (u.id = m.user_id) WHERE r.name = $1 ORDER BY m.created ASC",
+          [data.room.name],
+          (err, res) => {
+            if (err) throw err;
+
+            if (res) {
+              // Send all the room messages to the user
+              ws.send(
+                JSON.stringify({
+                  type: "receive-messages",
+                  messages: res.rows
+                })
+              );
+            }
+          }
+        );
+        // Get all users which are in the room and send it to the user
+        ws.send(
+          JSON.stringify({
+            type: "receive-users",
+            users: rooms[data.room.name]
+          })
+        );
         break;
       case "send-message":
         db.query(

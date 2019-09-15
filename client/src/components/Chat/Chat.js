@@ -10,9 +10,11 @@ const Chat = props => {
     receiveRooms,
     receiveMessage,
     receiveMessages,
+    receiveUsers,
     room,
-    user,
-    messages
+    session,
+    messages,
+    users
   } = props;
 
   // Local state contains the message to send
@@ -41,6 +43,13 @@ const Chat = props => {
     // Create a WebSocket object and establish a connection to the server
     ws.current = new WebSocket(URI);
 
+    ws.current.onopen = () => {
+      // Join the "Lobby" room
+      ws.current.send(
+        JSON.stringify({ type: "join-room", room: { id: 2, name: "Lobby" } })
+      );
+    };
+
     // WebSocket listens on the message event
     ws.current.onmessage = message => {
       // Converts the string to a javascript object
@@ -56,29 +65,33 @@ const Chat = props => {
         case "receive-messages":
           receiveMessages(data.messages);
           break;
+        case "receive-users":
+          receiveUsers(data.users);
       }
     };
 
     // Executes all code inside this function before the page refreshes
     window.onbeforeunload = () => {
       // When the page refreshes, we want to leave the current room
-      const data = {
-        type: "leave-room",
-        room: room.current,
-        user
-      };
-      ws.current.send(JSON.stringify(data));
+      ws.current.send(
+        JSON.stringify({
+          type: "leave-room",
+          room: room.current,
+          user: session.user
+        })
+      );
     };
 
     // Equivalent to ComponentWillUnmount lifecycle method
     return () => {
       // Leave the current room, when the component will unmount
-      const data = {
-        type: "leave-room",
-        room: room.current,
-        user
-      };
-      ws.current.send(JSON.stringify(data));
+      ws.current.send(
+        JSON.stringify({
+          type: "leave-room",
+          room: room.current,
+          user: session.user
+        })
+      );
     };
   }, []);
 
@@ -92,8 +105,14 @@ const Chat = props => {
     // Prevent the form to send an actual post request
     event.preventDefault();
     // Send the message through the websocket connection to the server
-    const data = { type: "send-message", message, room: room.current, user };
-    ws.current.send(JSON.stringify(data));
+    ws.current.send(
+      JSON.stringify({
+        type: "send-message",
+        room: room.current,
+        user: session.user,
+        message
+      })
+    );
     // Clear the input after message was send
     setMessage("");
   };
@@ -135,7 +154,9 @@ const Chat = props => {
       </div>
 
       <div className="chat_users">
-        <div>Chat Room</div>
+        {users.map(obj => (
+          <div>{obj.user}</div>
+        ))}
       </div>
     </div>
   );
