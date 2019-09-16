@@ -1,4 +1,5 @@
-import { RECEIVE_ROOMS, UPDATE_USERS } from "../actions/room";
+import { RECEIVE_ROOMS, UPDATE_USERS, JOIN_ROOM } from "../actions/room";
+import { RECEIVE_USER_LOGOUT } from "../actions/session";
 
 const initialState = {
   all: [],
@@ -22,6 +23,13 @@ export default (state = initialState, action) => {
           return room;
         })
       };
+    case JOIN_ROOM:
+      return {
+        ...state,
+        current: action.room
+      };
+    case RECEIVE_USER_LOGOUT:
+      return initialState;
     default:
       return state;
   }

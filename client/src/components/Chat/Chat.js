@@ -13,7 +13,9 @@ const Chat = props => {
     receiveUsers,
     updateUsers,
     receiveUser,
-    room,
+    removeUser,
+    joinRoom,
+    rooms,
     session,
     messages,
     users
@@ -39,7 +41,7 @@ const Chat = props => {
   // Triggers every time when the component did mount
   useEffect(() => {
     // Retrieve the JSON webtoken from the local storage
-    const [_, token] = localStorage.getItem("jwtToken").split(" ");
+    const [, token] = localStorage.getItem("jwtToken").split(" ");
     // Create the uniform ressource identifier with the token inside the query
     const URI = encodeURI(`ws://localhost:5000/?token=${token}`);
     // Create a WebSocket object and establish a connection to the server
@@ -71,10 +73,16 @@ const Chat = props => {
           receiveUsers(data.users);
           break;
         case "update-users":
+          console.log("Update users: ", data.room);
           updateUsers(data.room);
           break;
         case "receive-user":
           receiveUser(data.user);
+          break;
+        case "remove-user":
+          removeUser(data.user);
+          break;
+        default:
           break;
       }
     };
@@ -85,7 +93,7 @@ const Chat = props => {
       ws.current.send(
         JSON.stringify({
           type: "leave-room",
-          room: room.current,
+          room: rooms.current,
           user: session.user
         })
       );
@@ -97,7 +105,7 @@ const Chat = props => {
       ws.current.send(
         JSON.stringify({
           type: "leave-room",
-          room: room.current,
+          room: rooms.current,
           user: session.user
         })
       );
@@ -117,13 +125,35 @@ const Chat = props => {
     ws.current.send(
       JSON.stringify({
         type: "send-message",
-        room: room.current,
+        room: rooms.current,
         user: session.user,
         message
       })
     );
     // Clear the input after message was send
     setMessage("");
+  };
+
+  const handleJoin = room => () => {
+    if (room.name === rooms.current.name) return;
+    // TODO: Leave the current room
+    ws.current.send(
+      JSON.stringify({
+        type: "leave-room",
+        room: rooms.current
+      })
+    );
+
+    // TODO: Change old room to new room in the redux store state
+    joinRoom(room);
+
+    // // // TODO: Join the new room
+    ws.current.send(
+      JSON.stringify({
+        type: "join-room",
+        room
+      })
+    );
   };
 
   return (
@@ -133,8 +163,13 @@ const Chat = props => {
           <div>Name</div>
           <div>Users</div>
         </div>
-        {room.all.map(room => (
-          <ChatRoom name={room.name} users={room.users} />
+        {rooms.all.map(room => (
+          <ChatRoom
+            id={room.id}
+            name={room.name}
+            users={room.users}
+            handleJoin={handleJoin}
+          />
         ))}
       </div>
 
@@ -171,6 +206,19 @@ const Chat = props => {
   );
 };
 
-Chat.propTypes = {};
+Chat.propTypes = {
+  receiveRooms: PropTypes.func.isRequired,
+  receiveMessage: PropTypes.func.isRequired,
+  receiveMessages: PropTypes.func.isRequired,
+  receiveUsers: PropTypes.func.isRequired,
+  updateUsers: PropTypes.func.isRequired,
+  receiveUser: PropTypes.func.isRequired,
+  removeUser: PropTypes.func.isRequired,
+  joinRoom: PropTypes.func.isRequired,
+  room: PropTypes.object.isRequired,
+  session: PropTypes.object.isRequired,
+  messages: PropTypes.arrayOf(PropTypes.object).isRequired,
+  users: PropTypes.arrayOf(PropTypes.object).isRequired
+};
 
 export default Chat;

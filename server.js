@@ -141,10 +141,6 @@ wss.on("connection", (ws, req) => {
         );
         break;
       case "leave-room":
-        // When leaving the room, remove the user from the clients array of the room
-        rooms[data.room.name] = rooms[data.room.name].filter(
-          client => client.user !== data.user.name
-        );
         // Send the updated number of users in the room to all clients
         Object.values(rooms).forEach(arr => {
           arr.forEach(client =>
@@ -153,13 +149,27 @@ wss.on("connection", (ws, req) => {
                 type: "update-users",
                 room: {
                   name: data.room.name,
-                  users: rooms[data.room.name].length
+                  users: rooms[data.room.name].length - 1
                 }
               })
             )
           );
         });
-        // TODO: Remove the user from the redux state of all clients in the room
+
+        // When leaving the room, remove the user from the clients array of the room
+        rooms[data.room.name] = rooms[data.room.name].filter(
+          client => client.user !== req.jwt.name
+        );
+
+        // Remove the user from the redux state of all clients of the room
+        rooms[data.room.name].forEach(client => {
+          client.ws.send(
+            JSON.stringify({
+              type: "remove-user",
+              user: req.jwt
+            })
+          );
+        });
         break;
     }
   });

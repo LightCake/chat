@@ -3,12 +3,13 @@ import PropTypes from "prop-types";
 import "./ChatRoom.css";
 
 const ChatRoom = props => {
-  const { name, users } = props;
+  const { id, name, users, handleJoin } = props;
+
   return (
-    <div className="chat_room">
+    <button className="chat_room" onClick={handleJoin({ id, name })}>
       <div className="chat_room_name">{name}</div>
       <div className="chat_room_users">{users}</div>
-    </div>
+    </button>
   );
 };
 

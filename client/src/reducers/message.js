@@ -1,4 +1,5 @@
 import { RECEIVE_MESSAGE, RECEIVE_MESSAGES } from "../actions/message";
+import { RECEIVE_USER_LOGOUT } from "../actions/session";
 
 const initialState = {
   room: []
@@ -16,6 +17,8 @@ export default (state = initialState, action) => {
         ...state,
         room: state.room.concat(action.message)
       };
+    case RECEIVE_USER_LOGOUT:
+      return initialState;
     default:
       return state;
   }

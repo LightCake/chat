@@ -1,11 +1,11 @@
 import { connect } from "react-redux";
 import Chat from "./Chat";
-import { receiveRooms, updateUsers } from "../../actions/room";
+import { receiveRooms, updateUsers, joinRoom } from "../../actions/room";
 import { receiveMessages, receiveMessage } from "../../actions/message";
-import { receiveUsers, receiveUser } from "../../actions/users";
+import { receiveUsers, receiveUser, removeUser } from "../../actions/users";
 
 const mapStateToProps = state => ({
-  room: state.room,
+  rooms: state.room,
   session: state.session,
   messages: state.message.room,
   users: state.user.all
@@ -17,7 +17,9 @@ const mapDispatchToProps = dispatch => ({
   receiveMessage: message => dispatch(receiveMessage(message)),
   receiveUsers: users => dispatch(receiveUsers(users)),
   updateUsers: room => dispatch(updateUsers(room)),
-  receiveUser: user => dispatch(receiveUser(user))
+  receiveUser: user => dispatch(receiveUser(user)),
+  removeUser: user => dispatch(removeUser(user)),
+  joinRoom: room => dispatch(joinRoom(room))
 });
 
 export default connect(
