@@ -29,6 +29,8 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Make modal on chat page work */
+  position: relative;
 }
 
 .app > :nth-child(2) {

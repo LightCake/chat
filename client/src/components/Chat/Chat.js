@@ -4,6 +4,8 @@ import Button from "../Button/Button";
 import "./Chat.css";
 import ChatMessage from "../ChatMessage/ChatMessage";
 import ChatRoom from "../ChatRoom/ChatRoom";
+import CreateRoomModal from "../CreateRoomModal/CreateRoomModal";
+import useModal from "../../hooks/useModal";
 
 const Chat = props => {
   const {
@@ -15,6 +17,7 @@ const Chat = props => {
     receiveUser,
     removeUser,
     joinRoom,
+    addRoom,
     rooms,
     session,
     messages,
@@ -23,6 +26,8 @@ const Chat = props => {
 
   // Local state contains the message to send
   const [message, setMessage] = useState("");
+  // Custom hook returns boolean value and function that change it
+  const { isShowing, toggle } = useModal();
 
   // References the WebSocket object
   const ws = useRef(null);
@@ -81,12 +86,16 @@ const Chat = props => {
         case "remove-user":
           removeUser(data.user);
           break;
+        case "add-room":
+          addRoom(data.room);
+          break;
         default:
           break;
       }
     };
   }, []);
 
+  // Whenever the current room changes, we have to update it in the reload and unmount code
   useEffect(() => {
     // Executes all code inside this function before the page refreshes
     window.onbeforeunload = () => {
@@ -156,21 +165,37 @@ const Chat = props => {
     );
   };
 
+  const handleCreate = room => event => {
+    event.preventDefault();
+    // Send new room to the server through the WebSocket
+    ws.current.send(
+      JSON.stringify({
+        type: "create-room",
+        room
+      })
+    );
+  };
+
   return (
     <div className="chat">
-      <div className="chat_rooms">
+      <div className="chat_rooms_container">
         <div className="chat_rooms_headers">
           <div>Name</div>
           <div>Users</div>
         </div>
-        {rooms.all.map(room => (
-          <ChatRoom
-            id={room.id}
-            name={room.name}
-            users={room.users}
-            handleJoin={handleJoin}
-          />
-        ))}
+        <div className="chat_rooms">
+          {rooms.all.map(room => (
+            <ChatRoom
+              id={room.id}
+              name={room.name}
+              users={room.users}
+              handleJoin={handleJoin}
+            />
+          ))}
+        </div>
+        <button className="chat_rooms_add" onClick={toggle}>
+          +
+        </button>
       </div>
 
       <div className="chat_history">
@@ -202,6 +227,11 @@ const Chat = props => {
           <div>{obj.user}</div>
         ))}
       </div>
+      <CreateRoomModal
+        isShowing={isShowing}
+        toggle={toggle}
+        handleCreate={handleCreate}
+      />
     </div>
   );
 };

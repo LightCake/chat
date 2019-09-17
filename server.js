@@ -180,6 +180,39 @@ wss.on("connection", (ws, req) => {
           );
         });
         break;
+      case "create-room":
+        console.log(data.room);
+        console.log(req.jwt);
+        // Insert the room to the database
+        db.query(
+          "INSERT INTO rooms (user_id, name) VALUES ($1, $2) RETURNING *",
+          [req.jwt.id, data.room],
+          (err, res) => {
+            if (err) throw err;
+
+            if (res) {
+              // Create array in the rooms object for the new room's users to join
+              rooms[res.rows[0].name] = [];
+              // Create the room object with the current number of users in it
+              const room = {
+                ...res.rows[0],
+                users: rooms[res.rows[0].name].length
+              };
+              // Send the new room to all clients
+              Object.values(rooms).forEach(arr => {
+                arr.forEach(client =>
+                  client.ws.send(
+                    JSON.stringify({
+                      type: "add-room",
+                      room
+                    })
+                  )
+                );
+              });
+            }
+          }
+        );
+        break;
     }
   });
 });

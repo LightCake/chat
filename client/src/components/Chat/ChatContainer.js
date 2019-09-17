@@ -1,6 +1,11 @@
 import { connect } from "react-redux";
 import Chat from "./Chat";
-import { receiveRooms, updateUsers, joinRoom } from "../../actions/room";
+import {
+  receiveRooms,
+  updateUsers,
+  joinRoom,
+  addRoom
+} from "../../actions/room";
 import { receiveMessages, receiveMessage } from "../../actions/message";
 import { receiveUsers, receiveUser, removeUser } from "../../actions/users";
 
@@ -19,7 +24,8 @@ const mapDispatchToProps = dispatch => ({
   updateUsers: room => dispatch(updateUsers(room)),
   receiveUser: user => dispatch(receiveUser(user)),
   removeUser: user => dispatch(removeUser(user)),
-  joinRoom: room => dispatch(joinRoom(room))
+  joinRoom: room => dispatch(joinRoom(room)),
+  addRoom: room => dispatch(addRoom(room))
 });
 
 export default connect(

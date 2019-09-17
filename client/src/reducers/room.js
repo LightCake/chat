@@ -1,4 +1,9 @@
-import { RECEIVE_ROOMS, UPDATE_USERS, JOIN_ROOM } from "../actions/room";
+import {
+  RECEIVE_ROOMS,
+  UPDATE_USERS,
+  JOIN_ROOM,
+  ADD_ROOM
+} from "../actions/room";
 import { RECEIVE_USER_LOGOUT } from "../actions/session";
 
 const initialState = {
@@ -27,6 +32,11 @@ export default (state = initialState, action) => {
       return {
         ...state,
         current: action.room
+      };
+    case ADD_ROOM:
+      return {
+        ...state,
+        all: state.all.concat(action.room)
       };
     case RECEIVE_USER_LOGOUT:
       return initialState;
