@@ -9,6 +9,8 @@
   grid-column: 1/2;
   background: var(--metallic_seaweed);
   padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .chat_rooms > * {

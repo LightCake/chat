@@ -73,7 +73,6 @@ const Chat = props => {
           receiveUsers(data.users);
           break;
         case "update-users":
-          console.log("Update users: ", data.room);
           updateUsers(data.room);
           break;
         case "receive-user":
@@ -86,7 +85,9 @@ const Chat = props => {
           break;
       }
     };
+  }, []);
 
+  useEffect(() => {
     // Executes all code inside this function before the page refreshes
     window.onbeforeunload = () => {
       // When the page refreshes, we want to leave the current room
@@ -105,12 +106,11 @@ const Chat = props => {
       ws.current.send(
         JSON.stringify({
           type: "leave-room",
-          room: rooms.current,
-          user: session.user
+          room: rooms.current
         })
       );
     };
-  }, []);
+  }, [rooms.current]);
 
   // Update the local message state, whenever input value changes
   const update = event => {
@@ -144,10 +144,10 @@ const Chat = props => {
       })
     );
 
-    // TODO: Change old room to new room in the redux store state
+    // Change old room to new room in the redux store state
     joinRoom(room);
 
-    // // // TODO: Join the new room
+    // Join the new room
     ws.current.send(
       JSON.stringify({
         type: "join-room",
@@ -215,7 +215,7 @@ Chat.propTypes = {
   receiveUser: PropTypes.func.isRequired,
   removeUser: PropTypes.func.isRequired,
   joinRoom: PropTypes.func.isRequired,
-  room: PropTypes.object.isRequired,
+  rooms: PropTypes.object.isRequired,
   session: PropTypes.object.isRequired,
   messages: PropTypes.arrayOf(PropTypes.object).isRequired,
   users: PropTypes.arrayOf(PropTypes.object).isRequired

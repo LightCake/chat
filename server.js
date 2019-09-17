@@ -44,16 +44,15 @@ db.query("SELECT * FROM rooms", (err, res) => {
 });
 
 wss.on("connection", (ws, req) => {
-  // rooms["Lobby"].forEach(client => client.ws.send("hello"));
-  // Send list of rooms, when client connected to websocket
-  const tent = db_rooms.map(room => {
+  // Send list of rooms, when client connected to websocket with the number of users in each room
+  const rooms_extended = db_rooms.map(room => {
     room.users = rooms[room.name].length;
     return room;
   });
   ws.send(
     JSON.stringify({
       type: "receive-rooms",
-      rooms: tent
+      rooms: rooms_extended
     })
   );
 
@@ -141,6 +140,11 @@ wss.on("connection", (ws, req) => {
         );
         break;
       case "leave-room":
+        // When leaving the room, remove the user from the clients array of the room
+        rooms[data.room.name] = rooms[data.room.name].filter(
+          client => client.user !== req.jwt.name
+        );
+
         // Send the updated number of users in the room to all clients
         Object.values(rooms).forEach(arr => {
           arr.forEach(client =>
@@ -149,16 +153,21 @@ wss.on("connection", (ws, req) => {
                 type: "update-users",
                 room: {
                   name: data.room.name,
-                  users: rooms[data.room.name].length - 1
+                  users: rooms[data.room.name].length
                 }
               })
             )
           );
         });
 
-        // When leaving the room, remove the user from the clients array of the room
-        rooms[data.room.name] = rooms[data.room.name].filter(
-          client => client.user !== req.jwt.name
+        ws.send(
+          JSON.stringify({
+            type: "update-users",
+            room: {
+              name: data.room.name,
+              users: rooms[data.room.name].length
+            }
+          })
         );
 
         // Remove the user from the redux state of all clients of the room

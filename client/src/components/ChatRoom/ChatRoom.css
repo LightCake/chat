@@ -1,9 +1,17 @@
 .chat_room {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  justify-content: space-between;
   cursor: pointer;
+  padding: 0.5rem 0;
+  font-size: 1rem;
+  border: none;
+  background: transparent;
 }
 
 .chat_room_users {
   justify-self: end;
+}
+
+.chat_room_name {
+  justify-self: start;
 }
